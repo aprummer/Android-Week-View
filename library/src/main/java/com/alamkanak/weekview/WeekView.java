@@ -58,6 +58,9 @@ public class WeekView extends View {
     @Deprecated
     public static final int LENGTH_LONG = 2;
     private final Context mContext;
+    private Calendar mHomeDate;
+    private Calendar mMinDate;
+    private Calendar mMaxDate;
     private Paint mTimeTextPaint;
     private float mTimeTextWidth;
     private float mTimeTextHeight;
@@ -463,6 +466,61 @@ public class WeekView extends View {
                 return true;
             }
         });
+    }
+
+    private void resetHomeDate() {
+        Calendar newHomeDate = today();
+
+        if (mMinDate != null && newHomeDate.before(mMinDate)) {
+            newHomeDate = (Calendar) mMinDate.clone();
+        }
+        if (mMaxDate != null && newHomeDate.after(mMaxDate)) {
+            newHomeDate = (Calendar) mMaxDate.clone();
+        }
+
+        if (mMaxDate != null) {
+            Calendar date = (Calendar) mMaxDate.clone();
+            date.add(Calendar.DATE, 1 - getRealNumberOfVisibleDays());
+            while (date.before(mMinDate)) {
+                date.add(Calendar.DATE, 1);
+            }
+
+            if (newHomeDate.after(date)) {
+                newHomeDate = date;
+            }
+        }
+
+        mHomeDate = newHomeDate;
+    }
+
+    private float getXOriginForDate(Calendar date) {
+        return -daysBetween(mHomeDate, date) * (mWidthPerDay + mColumnGap);
+    }
+
+    private float getYMaxLimit() {
+        return 0;
+    }
+
+    private float getXMinLimit() {
+        if (mMaxDate == null) {
+            return Integer.MIN_VALUE;
+        } else {
+            Calendar date = (Calendar) mMaxDate.clone();
+            date.add(Calendar.DATE, 1 - getRealNumberOfVisibleDays());
+            while (date.before(mMinDate)) {
+                date.add(Calendar.DATE, 1);
+            }
+
+            return getXOriginForDate(date);
+        }
+    }
+
+    private float getXMaxLimit() {
+        if (mMinDate == null) {
+            return Integer.MAX_VALUE;
+        } else {
+            return getXOriginForDate(mMinDate);
+        }
     }
 
     // fix rotation changes
@@ -1340,6 +1398,18 @@ public class WeekView extends View {
         initTextTimeWidth();
     }
 
+    /**
+     * Get the real number of visible days
+     * If the amount of days between max date and min date is smaller, that value is returned
+     *
+     * @return The real number of visible days
+     */
+    public int getRealNumberOfVisibleDays() {
+        if (mMinDate == null || mMaxDate == null)
+            return getNumberOfVisibleDays();
+
+        return Math.min(mNumberOfVisibleDays, daysBetween(mMinDate, mMaxDate) + 1);
+    }
 
     /**
      * Get the number of visible days in a week.
@@ -1653,6 +1723,70 @@ public class WeekView extends View {
      */
     public void setXScrollingSpeed(float xScrollingSpeed) {
         this.mXScrollingSpeed = xScrollingSpeed;
+    }
+
+    /**
+     * Get the earliest day that can be displayed. Will return null if no minimum date is set.
+     *
+     * @return the earliest day that can be displayed, null if no minimum date set
+     */
+    public Calendar getMinDate() {
+        return mMinDate;
+    }
+
+    /**
+     * Set the earliest day that can be displayed. This will determine the left horizontal scroll
+     * limit. The default value is null (allow unlimited scrolling into the past).
+     *
+     * @param minDate The new minimum date (pass null for no minimum)
+     */
+    public void setMinDate(Calendar minDate) {
+        if (minDate != null) {
+            minDate.set(Calendar.HOUR_OF_DAY, 0);
+            minDate.set(Calendar.MINUTE, 0);
+            minDate.set(Calendar.SECOND, 0);
+            minDate.set(Calendar.MILLISECOND, 0);
+            if (mMaxDate != null && minDate.after(mMaxDate)) {
+                throw new IllegalArgumentException("minDate cannot be later than maxDate");
+            }
+        }
+
+        mMinDate = minDate;
+        resetHomeDate();
+        mCurrentOrigin.x = 0;
+        invalidate();
+    }
+
+    /**
+     * Get the latest day that can be displayed. Will return null if no maximum date is set.
+     *
+     * @return the latest day the can be displayed, null if no max date set
+     */
+    public Calendar getMaxDate() {
+        return mMaxDate;
+    }
+
+    /**
+     * Set the latest day that can be displayed. This will determine the right horizontal scroll
+     * limit. The default value is null (allow unlimited scrolling in to the future).
+     *
+     * @param maxDate The new maximum date (pass null for no maximum)
+     */
+    public void setMaxDate(Calendar maxDate) {
+        if (maxDate != null) {
+            maxDate.set(Calendar.HOUR_OF_DAY, 0);
+            maxDate.set(Calendar.MINUTE, 0);
+            maxDate.set(Calendar.SECOND, 0);
+            maxDate.set(Calendar.MILLISECOND, 0);
+            if (mMinDate != null && maxDate.before(mMinDate)) {
+                throw new IllegalArgumentException("maxDate has to be after minDate");
+            }
+        }
+
+        mMaxDate = maxDate;
+        resetHomeDate();
+        mCurrentOrigin.x = 0;
+        invalidate();
     }
 
     /**
@@ -1987,7 +2121,23 @@ public class WeekView extends View {
         return -mCurrentOrigin.y / mHourHeight;
     }
 
-
+    /**
+     * Determine whether a given calendar day falls within the scroll limits set for this view.
+     *
+     * @param day the day to check
+     * @return True if there are no limit or the date is within the limits.
+     * @see #setMinDate(Calendar)
+     * @see #setMaxDate(Calendar)
+     */
+    public boolean dateIsValid(Calendar day) {
+        if (mMinDate != null && day.before(mMinDate)) {
+            return false;
+        }
+        if (mMaxDate != null && day.after(mMaxDate)) {
+            return false;
+        }
+        return true;
+    }
 
     /////////////////////////////////////////////////////////////////
     //

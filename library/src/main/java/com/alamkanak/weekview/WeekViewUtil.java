@@ -36,4 +36,51 @@ public class WeekViewUtil {
         today.set(Calendar.MILLISECOND, 0);
         return today;
     }
+
+    /**
+     * Checks if two dates are on the same day and hour.
+     *
+     * @param dateOne The first day.
+     * @param dateTwo The second day.
+     * @return Whether the dates are on the same day and hour.
+     */
+    public static boolean isSameDayAndHour(Calendar dateOne, Calendar dateTwo) {
+
+        if (dateTwo != null) {
+            return isSameDay(dateOne, dateTwo) && dateOne.get(Calendar.HOUR_OF_DAY) == dateTwo.get(Calendar.HOUR_OF_DAY);
+        }
+        return false;
+    }
+
+    /**
+     * Returns the amount of days between the second date and the first date
+     *
+     * @param dateOne the first date
+     * @param dateTwo the second date
+     * @return the amount of days between dateTwo and dateOne
+     */
+    public static int daysBetween(Calendar dateOne, Calendar dateTwo) {
+        return (int) (((dateTwo.getTimeInMillis() + dateTwo.getTimeZone().getOffset(dateTwo.getTimeInMillis())) / (1000 * 60 * 60 * 24)) -
+                ((dateOne.getTimeInMillis() + dateOne.getTimeZone().getOffset(dateOne.getTimeInMillis())) / (1000 * 60 * 60 * 24)));
+    }
+
+    /*
+     * Returns the amount of minutes passed in the day before the time in the given date
+     * @param date
+     * @return amount of minutes in day before time
+     */
+    public static int getPassedMinutesInDay(Calendar date) {
+        return getPassedMinutesInDay(date.get(Calendar.HOUR_OF_DAY), date.get(Calendar.MINUTE));
+    }
+
+    /**
+     * Returns the amount of minutes in the given hours and minutes
+     *
+     * @param hour
+     * @param minute
+     * @return amount of minutes in the given hours and minutes
+     */
+    public static int getPassedMinutesInDay(int hour, int minute) {
+        return hour * 60 + minute;
+    }
 }
