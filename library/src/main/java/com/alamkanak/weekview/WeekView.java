@@ -61,6 +61,7 @@ public class WeekView extends View {
     private Calendar mHomeDate;
     private Calendar mMinDate;
     private Calendar mMaxDate;
+    private boolean mAutoLimitTime = false;
     private int mMinTime = 0;
     private int mMaxTime = 24;
     private Paint mTimeTextPaint;
@@ -384,6 +385,8 @@ public class WeekView extends View {
     }
 
     private void init() {
+        resetHomeDate();
+
         // Scrolling initialization.
         mGestureDetector = new GestureDetectorCompat(mContext, mGestureListener);
         mScroller = new OverScroller(mContext, new FastOutLinearInInterpolator());
@@ -634,54 +637,54 @@ public class WeekView extends View {
 
     private void drawHeaderRowAndEvents(Canvas canvas) {
         // Calculate the available width for each day.
-        mHeaderColumnWidth = mTimeTextWidth + mHeaderColumnPadding *2;
-        mWidthPerDay = getWidth() - mHeaderColumnWidth - mColumnGap * (mNumberOfVisibleDays - 1);
-        mWidthPerDay = mWidthPerDay/mNumberOfVisibleDays;
+        mHeaderColumnWidth = mTimeTextWidth + mHeaderColumnPadding * 2;
+        mWidthPerDay = getWidth() - mHeaderColumnWidth - mColumnGap * (getRealNumberOfVisibleDays() - 1);
+        mWidthPerDay = mWidthPerDay / getRealNumberOfVisibleDays();
 
         calculateHeaderHeight(); //Make sure the header is the right size (depends on AllDay events)
 
         Calendar today = today();
 
         if (mAreDimensionsInvalid) {
-            mEffectiveMinHourHeight= Math.max(mMinHourHeight, (int) ((getHeight() - mHeaderHeight - mHeaderRowPadding * 2 - mHeaderMarginBottom) / 24));
+            mEffectiveMinHourHeight = Math.max(mMinHourHeight, (int) ((getHeight() - mHeaderHeight - mHeaderRowPadding * 2 - mHeaderMarginBottom) / (mMaxTime - mMinTime)));
 
             mAreDimensionsInvalid = false;
-            if(mScrollToDay != null)
+            if (mScrollToDay != null)
                 goToDate(mScrollToDay);
 
             mAreDimensionsInvalid = false;
-            if(mScrollToHour >= 0)
+            if (mScrollToHour >= 0)
                 goToHour(mScrollToHour);
 
             mScrollToDay = null;
             mScrollToHour = -1;
             mAreDimensionsInvalid = false;
         }
-        if (mIsFirstDraw){
+        if (mIsFirstDraw) {
             mIsFirstDraw = false;
 
             // If the week view is being drawn for the first time, then consider the first day of the week.
-            if(mNumberOfVisibleDays >= 7 && today.get(Calendar.DAY_OF_WEEK) != mFirstDayOfWeek && mShowFirstDayOfWeekFirst) {
-                int difference = (today.get(Calendar.DAY_OF_WEEK) - mFirstDayOfWeek);
+            if (getRealNumberOfVisibleDays() >= 7 && mHomeDate.get(Calendar.DAY_OF_WEEK) != mFirstDayOfWeek && mShowFirstDayOfWeekFirst) {
+                int difference = (mHomeDate.get(Calendar.DAY_OF_WEEK) - mFirstDayOfWeek);
                 mCurrentOrigin.x += (mWidthPerDay + mColumnGap) * difference;
             }
+            setLimitTime(mMinTime, mMaxTime);
         }
 
         // Calculate the new height due to the zooming.
-        if (mNewHourHeight > 0){
+        if (mNewHourHeight > 0) {
             if (mNewHourHeight < mEffectiveMinHourHeight)
                 mNewHourHeight = mEffectiveMinHourHeight;
             else if (mNewHourHeight > mMaxHourHeight)
                 mNewHourHeight = mMaxHourHeight;
 
-            mCurrentOrigin.y = (mCurrentOrigin.y/mHourHeight)*mNewHourHeight;
             mHourHeight = mNewHourHeight;
             mNewHourHeight = -1;
         }
 
         // If the new mCurrentOrigin.y is invalid, make it valid.
-        if (mCurrentOrigin.y < getHeight() - mHourHeight * 24 - mHeaderHeight - mHeaderRowPadding * 2 - mHeaderMarginBottom - mTimeTextHeight/2)
-            mCurrentOrigin.y = getHeight() - mHourHeight * 24 - mHeaderHeight - mHeaderRowPadding * 2 - mHeaderMarginBottom - mTimeTextHeight/2;
+        if (mCurrentOrigin.y < getHeight() - mHourHeight * (mMaxTime - mMinTime) - mHeaderHeight - mHeaderRowPadding * 2 - mHeaderMarginBottom - mTimeTextHeight / 2)
+            mCurrentOrigin.y = getHeight() - mHourHeight * (mMaxTime - mMinTime) - mHeaderHeight - mHeaderRowPadding * 2 - mHeaderMarginBottom - mTimeTextHeight / 2;
 
         // Don't put an "else if" because it will trigger a glitch when completely zoomed out and
         // scrolling vertically.
@@ -689,53 +692,69 @@ public class WeekView extends View {
             mCurrentOrigin.y = 0;
         }
 
+        int leftDaysWithGaps = getLeftDaysWithGaps();
         // Consider scroll offset.
-        int leftDaysWithGaps = (int) -(Math.ceil(mCurrentOrigin.x / (mWidthPerDay + mColumnGap)));
-        float startFromPixel = mCurrentOrigin.x + (mWidthPerDay + mColumnGap) * leftDaysWithGaps +
-                mHeaderColumnWidth;
+        float startFromPixel = getXStartPixel();
         float startPixel = startFromPixel;
 
         // Prepare to iterate for each day.
         Calendar day = (Calendar) today.clone();
-        day.add(Calendar.HOUR, 6);
+        day.add(Calendar.HOUR_OF_DAY, 6);
 
         // Prepare to iterate for each hour to draw the hour lines.
         int lineCount = (int) ((getHeight() - mHeaderHeight - mHeaderRowPadding * 2 -
                 mHeaderMarginBottom) / mHourHeight) + 1;
-        lineCount = (lineCount) * (mNumberOfVisibleDays+1);
+
+        lineCount = (lineCount) * (getRealNumberOfVisibleDays() + 1);
+
         float[] hourLines = new float[lineCount * 4];
 
         // Clear the cache for event rectangles.
         if (mEventRects != null) {
-            for (EventRect eventRect: mEventRects) {
+            for (EventRect eventRect : mEventRects) {
                 eventRect.rectF = null;
             }
         }
 
         // Clip to paint events only.
-        canvas.clipRect(mHeaderColumnWidth, mHeaderHeight + mHeaderRowPadding * 2 + mHeaderMarginBottom + mTimeTextHeight/2, getWidth(), getHeight(), Region.Op.REPLACE);
+        canvas.save();
+        canvas.clipRect(mHeaderColumnWidth, mHeaderHeight + mHeaderRowPadding * 2 + mHeaderMarginBottom + mTimeTextHeight / 2, getWidth(), getHeight());
 
         // Iterate through each day.
         Calendar oldFirstVisibleDay = mFirstVisibleDay;
-        mFirstVisibleDay = (Calendar) today.clone();
+        mFirstVisibleDay = (Calendar) mHomeDate.clone();
         mFirstVisibleDay.add(Calendar.DATE, -(Math.round(mCurrentOrigin.x / (mWidthPerDay + mColumnGap))));
-        if(!mFirstVisibleDay.equals(oldFirstVisibleDay) && mScrollListener != null){
+        if (!mFirstVisibleDay.equals(oldFirstVisibleDay) && mScrollListener != null) {
             mScrollListener.onFirstVisibleDayChanged(mFirstVisibleDay, oldFirstVisibleDay);
         }
+
+        if (mAutoLimitTime) {
+            List<Calendar> days = new ArrayList<>();
+            for (int dayNumber = leftDaysWithGaps + 1;
+                 dayNumber <= leftDaysWithGaps + getRealNumberOfVisibleDays();
+                 dayNumber++) {
+                day = (Calendar) mHomeDate.clone();
+                day.add(Calendar.DATE, dayNumber - 1);
+                days.add(day);
+            }
+            limitEventTime(days);
+        }
+
         for (int dayNumber = leftDaysWithGaps + 1;
-             dayNumber <= leftDaysWithGaps + mNumberOfVisibleDays + 1;
+             dayNumber <= leftDaysWithGaps + getRealNumberOfVisibleDays() + 1;
              dayNumber++) {
 
             // Check if the day is today.
-            day = (Calendar) today.clone();
+            day = (Calendar) mHomeDate.clone();
             mLastVisibleDay = (Calendar) day.clone();
             day.add(Calendar.DATE, dayNumber - 1);
             mLastVisibleDay.add(Calendar.DATE, dayNumber - 2);
-            boolean sameDay = isSameDay(day, today);
+            boolean isToday = isSameDay(day, today);
 
             // Don't draw days which are outside requested range
-            if (!dateIsValid(day))
+            if (!dateIsValid(day)) {
                 continue;
+            }
 
             // Get more events if necessary. We want to store the events 3 months beforehand. Get
             // events only when it is the first iteration of the loop.
@@ -747,37 +766,34 @@ public class WeekView extends View {
             }
 
             // Draw background color for each day.
-            float start =  (startPixel < mHeaderColumnWidth ? mHeaderColumnWidth : startPixel);
-            if (mWidthPerDay + startPixel - start > 0){
-                if (mShowDistinctPastFutureColor){
+            float start = (startPixel < mHeaderColumnWidth ? mHeaderColumnWidth : startPixel);
+            if (mWidthPerDay + startPixel - start > 0) {
+                if (mShowDistinctPastFutureColor) {
                     boolean isWeekend = day.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || day.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY;
                     Paint pastPaint = isWeekend && mShowDistinctWeekendColor ? mPastWeekendBackgroundPaint : mPastBackgroundPaint;
                     Paint futurePaint = isWeekend && mShowDistinctWeekendColor ? mFutureWeekendBackgroundPaint : mFutureBackgroundPaint;
-                    float startY = mHeaderHeight + mHeaderRowPadding * 2 + mTimeTextHeight/2 + mHeaderMarginBottom + mCurrentOrigin.y;
+                    float startY = mHeaderHeight + mHeaderRowPadding * 2 + mTimeTextHeight / 2 + mHeaderMarginBottom + mCurrentOrigin.y;
 
-                    if (sameDay){
+                    if (isToday) {
                         Calendar now = Calendar.getInstance();
-                        float beforeNow = (now.get(Calendar.HOUR_OF_DAY) + now.get(Calendar.MINUTE)/60.0f) * mHourHeight;
-                        canvas.drawRect(start, startY, startPixel + mWidthPerDay, startY+beforeNow, pastPaint);
-                        canvas.drawRect(start, startY+beforeNow, startPixel + mWidthPerDay, getHeight(), futurePaint);
-                    }
-                    else if (day.before(today)) {
+                        float beforeNow = (now.get(Calendar.HOUR_OF_DAY) - mMinTime + now.get(Calendar.MINUTE) / 60.0f) * mHourHeight;
+                        canvas.drawRect(start, startY, startPixel + mWidthPerDay, startY + beforeNow, pastPaint);
+                        canvas.drawRect(start, startY + beforeNow, startPixel + mWidthPerDay, getHeight(), futurePaint);
+                    } else if (day.before(today)) {
                         canvas.drawRect(start, startY, startPixel + mWidthPerDay, getHeight(), pastPaint);
-                    }
-                    else {
+                    } else {
                         canvas.drawRect(start, startY, startPixel + mWidthPerDay, getHeight(), futurePaint);
                     }
-                }
-                else {
-                    canvas.drawRect(start, mHeaderHeight + mHeaderRowPadding * 2 + mTimeTextHeight / 2 + mHeaderMarginBottom, startPixel + mWidthPerDay, getHeight(), sameDay ? mTodayBackgroundPaint : mDayBackgroundPaint);
+                } else {
+                    canvas.drawRect(start, mHeaderHeight + mHeaderRowPadding * 2 + mTimeTextHeight / 2 + mHeaderMarginBottom, startPixel + mWidthPerDay, getHeight(), isToday ? mTodayBackgroundPaint : mDayBackgroundPaint);
                 }
             }
 
             // Prepare the separator lines for hours.
             int i = 0;
-            for (int hourNumber = 0; hourNumber < 24; hourNumber++) {
-                float top = mHeaderHeight + mHeaderRowPadding * 2 + mCurrentOrigin.y + mHourHeight * hourNumber + mTimeTextHeight/2 + mHeaderMarginBottom;
-                if (top > mHeaderHeight + mHeaderRowPadding * 2 + mTimeTextHeight/2 + mHeaderMarginBottom - mHourSeparatorHeight && top < getHeight() && startPixel + mWidthPerDay - start > 0){
+            for (int hourNumber = mMinTime; hourNumber < mMaxTime; hourNumber++) {
+                float top = mHeaderHeight + mHeaderRowPadding * 2 + mCurrentOrigin.y + mHourHeight * (hourNumber - mMinTime) + mTimeTextHeight / 2 + mHeaderMarginBottom;
+                if (top > mHeaderHeight + mHeaderRowPadding * 2 + mTimeTextHeight / 2 + mHeaderMarginBottom - mHourSeparatorHeight && top < getHeight() && startPixel + mWidthPerDay - start > 0) {
                     hourLines[i * 4] = start;
                     hourLines[i * 4 + 1] = top;
                     hourLines[i * 4 + 2] = startPixel + mWidthPerDay;
@@ -793,34 +809,40 @@ public class WeekView extends View {
             drawEvents(day, startPixel, canvas);
 
             // Draw the line at the current time.
-            if (mShowNowLine && sameDay){
-                float startY = mHeaderHeight + mHeaderRowPadding * 2 + mTimeTextHeight/2 + mHeaderMarginBottom + mCurrentOrigin.y;
+            if (mShowNowLine && isToday) {
+                float startY = mHeaderHeight + mHeaderRowPadding * 2 + mTimeTextHeight / 2 + mHeaderMarginBottom + mCurrentOrigin.y;
                 Calendar now = Calendar.getInstance();
-                float beforeNow = (now.get(Calendar.HOUR_OF_DAY) + now.get(Calendar.MINUTE)/60.0f) * mHourHeight;
-                canvas.drawLine(start, startY + beforeNow, startPixel + mWidthPerDay, startY + beforeNow, mNowLinePaint);
+                float beforeNow = (now.get(Calendar.HOUR_OF_DAY) - mMinTime + now.get(Calendar.MINUTE) / 60.0f) * mHourHeight;
+                float top = startY + beforeNow;
+                canvas.drawLine(start, top, startPixel + mWidthPerDay, top, mNowLinePaint);
             }
 
             // In the next iteration, start from the next day.
             startPixel += mWidthPerDay + mColumnGap;
         }
+        canvas.restore();
 
         // Hide everything in the first cell (top left corner).
-        canvas.clipRect(0, 0, mTimeTextWidth + mHeaderColumnPadding * 2, mHeaderHeight + mHeaderRowPadding * 2, Region.Op.REPLACE);
+        canvas.save();
+        canvas.clipRect(0, 0, mTimeTextWidth + mHeaderColumnPadding * 2, mHeaderHeight + mHeaderRowPadding * 2);
         canvas.drawRect(0, 0, mTimeTextWidth + mHeaderColumnPadding * 2, mHeaderHeight + mHeaderRowPadding * 2, mHeaderBackgroundPaint);
+        canvas.restore();
 
         // Clip to paint header row only.
-        canvas.clipRect(mHeaderColumnWidth, 0, getWidth(), mHeaderHeight + mHeaderRowPadding * 2, Region.Op.REPLACE);
+        canvas.save();
+        canvas.clipRect(mHeaderColumnWidth, 0, getWidth(), mHeaderHeight + mHeaderRowPadding * 2);
 
         // Draw the header background.
         canvas.drawRect(0, 0, getWidth(), mHeaderHeight + mHeaderRowPadding * 2, mHeaderBackgroundPaint);
+        canvas.restore();
 
         // Draw the header row texts.
         startPixel = startFromPixel;
-        for (int dayNumber=leftDaysWithGaps+1; dayNumber <= leftDaysWithGaps + mNumberOfVisibleDays + 1; dayNumber++) {
+        for (int dayNumber = leftDaysWithGaps + 1; dayNumber <= leftDaysWithGaps + getRealNumberOfVisibleDays() + 1; dayNumber++) {
             // Check if the day is today.
-            day = (Calendar) today.clone();
+            day = (Calendar) mHomeDate.clone();
             day.add(Calendar.DATE, dayNumber - 1);
-            boolean sameDay = isSameDay(day, today);
+            boolean isToday = isSameDay(day, today);
 
             // Don't draw days which are outside requested range
             if (!dateIsValid(day))
@@ -830,7 +852,7 @@ public class WeekView extends View {
             String dayLabel = getDateTimeInterpreter().interpretDate(day);
             if (dayLabel == null)
                 throw new IllegalStateException("A DateTimeInterpreter must not return null date");
-            canvas.drawText(dayLabel, startPixel + mWidthPerDay / 2, mHeaderTextHeight + mHeaderRowPadding, sameDay ? mTodayHeaderTextPaint : mHeaderTextPaint);
+            canvas.drawText(dayLabel, startPixel + mWidthPerDay / 2, mHeaderTextHeight + mHeaderRowPadding, isToday ? mTodayHeaderTextPaint : mHeaderTextPaint);
             drawAllDayEvents(day, startPixel, canvas);
             startPixel += mWidthPerDay + mColumnGap;
         }
@@ -865,6 +887,57 @@ public class WeekView extends View {
             startPixel += mWidthPerDay + mColumnGap;
         }
         return null;
+    }
+
+    /**
+     * limit current time of event by update mMinTime & mMaxTime
+     * find smallest of start time & latest of end time
+     */
+    private void limitEventTime(List<Calendar> dates) {
+        if (mEventRects != null && mEventRects.size() > 0) {
+            Calendar startTime = null;
+            Calendar endTime = null;
+
+            for (EventRect eventRect : mEventRects) {
+                for (Calendar date : dates) {
+                    if (isSameDay(eventRect.event.getStartTime(), date) && !eventRect.event.isAllDay()) {
+
+                        if (startTime == null || getPassedMinutesInDay(startTime) > getPassedMinutesInDay(eventRect.event.getStartTime())) {
+                            startTime = eventRect.event.getStartTime();
+                        }
+
+                        if (endTime == null || getPassedMinutesInDay(endTime) < getPassedMinutesInDay(eventRect.event.getEndTime())) {
+                            endTime = eventRect.event.getEndTime();
+                        }
+                    }
+                }
+            }
+
+            if (startTime != null && endTime != null && startTime.before(endTime)) {
+                setLimitTime(Math.max(0, startTime.get(Calendar.HOUR_OF_DAY)),
+                        Math.min(24, endTime.get(Calendar.HOUR_OF_DAY) + 1));
+                return;
+            }
+        }
+    }
+
+    private int getMinHourOffset() {
+        return mHourHeight * mMinTime;
+    }
+
+    private float getEventsTop() {
+        // Calculate top.
+        return mCurrentOrigin.y + mHeaderHeight + mHeaderRowPadding * 2 + mHeaderMarginBottom + mTimeTextHeight / 2 + mEventMarginVertical - getMinHourOffset();
+
+    }
+
+    private int getLeftDaysWithGaps() {
+        return (int) -(Math.ceil(mCurrentOrigin.x / (mWidthPerDay + mColumnGap)));
+    }
+
+    private float getXStartPixel() {
+        return mCurrentOrigin.x + (mWidthPerDay + mColumnGap) * getLeftDaysWithGaps() +
+                mHeaderColumnWidth;
     }
 
     /**
@@ -1824,6 +1897,74 @@ public class WeekView extends View {
         mMaxDate = maxDate;
         resetHomeDate();
         mCurrentOrigin.x = 0;
+        invalidate();
+    }
+
+    /**
+     * auto calculate limit time on events in visible days.
+     */
+    public void setAutoLimitTime(boolean isAuto) {
+        this.mAutoLimitTime = isAuto;
+        invalidate();
+    }
+
+    private void recalculateHourHeight() {
+        int height = (int) ((getHeight() - (mHeaderHeight + mHeaderRowPadding * 2 + mTimeTextHeight / 2 + mHeaderMarginBottom)) / (this.mMaxTime - this.mMinTime));
+        if (height > mHourHeight) {
+            if (height > mMaxHourHeight)
+                mMaxHourHeight = height;
+            mNewHourHeight = height;
+        }
+    }
+
+    /**
+     * Set visible time span.
+     *
+     * @param startHour limit time display on top (between 0~24)
+     * @param endHour   limit time display at bottom (between 0~24 and larger than startHour)
+     */
+    public void setLimitTime(int startHour, int endHour) {
+        if (endHour <= startHour) {
+            throw new IllegalArgumentException("endHour must larger startHour.");
+        } else if (startHour < 0) {
+            throw new IllegalArgumentException("startHour must be at least 0.");
+        } else if (endHour > 24) {
+            throw new IllegalArgumentException("endHour can't be higher than 24.");
+        }
+        this.mMinTime = startHour;
+        this.mMaxTime = endHour;
+        recalculateHourHeight();
+        invalidate();
+    }
+
+    /**
+     * Set minimal shown time
+     *
+     * @param startHour limit time display on top (between 0~24) and smaller than endHour
+     */
+    public void setMinTime(int startHour) {
+        if (mMaxTime <= startHour) {
+            throw new IllegalArgumentException("startHour must smaller than endHour");
+        } else if (startHour < 0) {
+            throw new IllegalArgumentException("startHour must be at least 0.");
+        }
+        this.mMinTime = startHour;
+        recalculateHourHeight();
+    }
+
+    /**
+     * Set highest shown time
+     *
+     * @param endHour limit time display at bottom (between 0~24 and larger than startHour)
+     */
+    public void setMaxTime(int endHour) {
+        if (endHour <= mMinTime) {
+            throw new IllegalArgumentException("endHour must larger startHour.");
+        } else if (endHour > 24) {
+            throw new IllegalArgumentException("endHour can't be higher than 24.");
+        }
+        this.mMaxTime = endHour;
+        recalculateHourHeight();
         invalidate();
     }
 
