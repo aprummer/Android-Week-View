@@ -703,6 +703,11 @@ public class WeekView extends View {
             mLastVisibleDay.add(Calendar.DATE, dayNumber - 2);
             boolean sameDay = isSameDay(day, today);
 
+            // Don't draw days which are outside requested range
+            if (!dateIsValid(day)) {
+                continue;
+            }
+
             // Get more events if necessary. We want to store the events 3 months beforehand. Get
             // events only when it is the first iteration of the loop.
             if (mEventRects == null || mRefreshEvents ||
@@ -787,6 +792,10 @@ public class WeekView extends View {
             day = (Calendar) today.clone();
             day.add(Calendar.DATE, dayNumber - 1);
             boolean sameDay = isSameDay(day, today);
+
+            // Don't draw days which are outside requested range
+            if (!dateIsValid(day))
+                continue;
 
             // Draw the day labels.
             String dayLabel = getDateTimeInterpreter().interpretDate(day);
@@ -1987,6 +1996,14 @@ public class WeekView extends View {
         }
 
         int nearestOrigin = (int) (mCurrentOrigin.x - leftDays * (mWidthPerDay + mColumnGap));
+
+        boolean mayScrollHorizontal = mCurrentOrigin.x - nearestOrigin < getXMaxLimit()
+                && mCurrentOrigin.x - nearestOrigin > getXMinLimit();
+
+        if (mayScrollHorizontal) {
+            mScroller.startScroll((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, -nearestOrigin, 0);
+            ViewCompat.postInvalidateOnAnimation(WeekView.this);
+        }
 
         if (nearestOrigin != 0) {
             // Stop current animation.
