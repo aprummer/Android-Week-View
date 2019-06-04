@@ -752,9 +752,9 @@ public class WeekView extends View {
             boolean isToday = isSameDay(day, today);
 
             // Don't draw days which are outside requested range
-            if (!dateIsValid(day)) {
-                continue;
-            }
+            //if (!dateIsValid(day)) {
+            //    continue;
+            //}
 
             // Get more events if necessary. We want to store the events 3 months beforehand. Get
             // events only when it is the first iteration of the loop.
@@ -845,8 +845,8 @@ public class WeekView extends View {
             boolean isToday = isSameDay(day, today);
 
             // Don't draw days which are outside requested range
-            if (!dateIsValid(day))
-                continue;
+            //if (!dateIsValid(day))
+            //    continue;
 
             // Draw the day labels.
             String dayLabel = getDateTimeInterpreter().interpretDate(day);
