@@ -17,6 +17,7 @@ public class WeekViewEvent {
     private String mName;
     private String mLocation;
     private int mColor;
+    private int mTextColor;
     private boolean mAllDay;
 
     public WeekViewEvent(){
@@ -139,6 +140,10 @@ public class WeekViewEvent {
     public void setColor(int color) {
         this.mColor = color;
     }
+
+    public int getTextColor() { return mTextColor; }
+
+    public void setTextColor(int textColor) { this.mTextColor = textColor; }
 
     public boolean isAllDay() {
         return mAllDay;

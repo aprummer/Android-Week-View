@@ -21,6 +21,7 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -1047,6 +1048,7 @@ public class WeekView extends View {
         if (event.getName() != null) {
             bob.append(event.getName());
             bob.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, bob.length(), 0);
+
             bob.append(' ');
         }
 
@@ -1054,6 +1056,15 @@ public class WeekView extends View {
         if (event.getLocation() != null) {
             bob.append(event.getLocation());
         }
+
+        // Prepare the start - endtime of the event.
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        String dateFormatString = "%s - %s";
+        String dateString = String.format(dateFormatString, sdf.format(event.getStartTime()), sdf.format(event.getEndTime()));
+        bob.append(dateString);
+
+        //bob.setSpan(new ForegroundColorSpan(event.getTextColor()), 0, bob.length(), 0);
+        mEventTextPaint.setColor(event.getTextColor());
 
         int availableHeight = (int) (rect.bottom - originalTop - mEventPadding * 2);
         int availableWidth = (int) (rect.right - originalLeft - mEventPadding * 2);
