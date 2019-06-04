@@ -874,7 +874,7 @@ public class WeekView extends View {
              dayNumber++) {
             float start =  (startPixel < mHeaderColumnWidth ? mHeaderColumnWidth : startPixel);
             if (mWidthPerDay + startPixel - start > 0 && x > start && x < startPixel + mWidthPerDay){
-                Calendar day = today();
+                Calendar day = (Calendar) mHomeDate.clone();
                 day.add(Calendar.DATE, dayNumber - 1);
                 float pixelsFromZero = y - mCurrentOrigin.y - mHeaderHeight
                         - mHeaderRowPadding * 2 - mTimeTextHeight/2 - mHeaderMarginBottom;
@@ -2254,17 +2254,7 @@ public class WeekView extends View {
 
         mRefreshEvents = true;
 
-        Calendar today = Calendar.getInstance();
-        today.set(Calendar.HOUR_OF_DAY, 0);
-        today.set(Calendar.MINUTE, 0);
-        today.set(Calendar.SECOND, 0);
-        today.set(Calendar.MILLISECOND, 0);
-
-        long day = 1000L * 60L * 60L * 24L;
-        long dateInMillis = date.getTimeInMillis() + date.getTimeZone().getOffset(date.getTimeInMillis());
-        long todayInMillis = today.getTimeInMillis() + today.getTimeZone().getOffset(today.getTimeInMillis());
-        long dateDifference = (dateInMillis/day) - (todayInMillis/day);
-        mCurrentOrigin.x = - dateDifference * (mWidthPerDay + mColumnGap);
+        mCurrentOrigin.x = -daysBetween(mHomeDate, date) * (mWidthPerDay + mColumnGap);
         invalidate();
     }
 
