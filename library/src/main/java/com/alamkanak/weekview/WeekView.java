@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -1060,7 +1061,8 @@ public class WeekView extends View {
         // Prepare the start - endtime of the event.
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         String dateFormatString = "%s - %s";
-        String dateString = String.format(dateFormatString, sdf.format(event.getStartTime()), sdf.format(event.getEndTime()));
+
+        String dateString = String.format(dateFormatString, sdf.format(event.getStartTime().getTime()), sdf.format(event.getEndTime().getTime()));
         bob.append(dateString);
 
         //bob.setSpan(new ForegroundColorSpan(event.getTextColor()), 0, bob.length(), 0);
