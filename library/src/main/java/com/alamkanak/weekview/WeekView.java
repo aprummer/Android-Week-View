@@ -1056,6 +1056,7 @@ public class WeekView extends View {
         // Prepare the location of the event.
         if (event.getLocation() != null) {
             bob.append(event.getLocation());
+            bob.append(' ');
         }
 
         // Prepare the start - endtime of the event.
