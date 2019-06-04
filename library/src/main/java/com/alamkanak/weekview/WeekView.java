@@ -491,7 +491,7 @@ public class WeekView extends View {
         });
     }
 
-    private void resetHomeDate() {
+    public void resetHomeDate() {
         Calendar newHomeDate = today();
 
         if (mMinDate != null && newHomeDate.before(mMinDate)) {
