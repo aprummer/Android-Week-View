@@ -251,6 +251,13 @@ public class WeekView extends View {
             mScroller.forceFinished(true);
 
             mCurrentFlingDirection = mCurrentScrollDirection;
+
+            if ((mCurrentFlingDirection == Direction.LEFT && !mHorizontalFlingEnabled) ||
+                    (mCurrentFlingDirection == Direction.RIGHT && !mHorizontalFlingEnabled) ||
+                    (mCurrentFlingDirection == Direction.VERTICAL && !mVerticalFlingEnabled )) {
+                return true;
+            }
+
             switch (mCurrentFlingDirection) {
                 case LEFT:
                 case RIGHT:
