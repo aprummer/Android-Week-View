@@ -175,7 +175,7 @@ public class WeekView extends View {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 
-            Log.d("WeekView", "onScroll");
+            Log.d("WeekView", "onScroll "+"X:"+distanceX +" / "+"Y:"+distanceY);
             // Check if view is zoomed.
             if (mIsZooming)
                 return true;
