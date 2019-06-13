@@ -2175,6 +2175,7 @@ public class WeekView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        Log.d("WeekView","onTouchEvent");
         mScaleDetector.onTouchEvent(event);
         boolean val = mGestureDetector.onTouchEvent(event);
 
