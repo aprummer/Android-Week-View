@@ -24,6 +24,7 @@ import android.text.format.DateFormat;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.HapticFeedbackConstants;
@@ -166,12 +167,15 @@ public class WeekView extends View {
 
         @Override
         public boolean onDown(MotionEvent e) {
+            Log.d("WeekView","onDown");
             goToNearestOrigin();
             return true;
         }
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+
+            Log.d("WeekView", "onScroll");
             // Check if view is zoomed.
             if (mIsZooming)
                 return true;
@@ -239,6 +243,7 @@ public class WeekView extends View {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            Log.d("WeekView","onFling");
             if (mIsZooming)
                 return true;
 
@@ -277,6 +282,7 @@ public class WeekView extends View {
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
+            Log.d("WeekView","onSingleTapConfirmed");
             // If the tap was on an event then trigger the callback.
             if (mEventRects != null && mEventClickListener != null) {
                 List<EventRect> reversedEventRects = mEventRects;
@@ -304,6 +310,7 @@ public class WeekView extends View {
 
         @Override
         public void onLongPress(MotionEvent e) {
+            Log.d("WeekView","onLongPress");
             super.onLongPress(e);
 
             if (mEventLongPressListener != null && mEventRects != null) {
