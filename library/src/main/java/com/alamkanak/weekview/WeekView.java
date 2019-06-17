@@ -1656,7 +1656,7 @@ public class WeekView extends View {
     }
 
     public void setLocationTextSize(int size) {
-        this.mLocationTextSize = size
+        this.mLocationTextSize = size;
     }
 
     public int getTimeTextSize() {
