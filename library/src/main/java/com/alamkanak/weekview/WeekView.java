@@ -16,11 +16,13 @@ import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.text.Layout;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
+import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
@@ -117,6 +119,8 @@ public class WeekView extends View {
     private int mColumnGap = 10;
     private int mFirstDayOfWeek = Calendar.MONDAY;
     private int mTextSize = 12;
+    private int mTimeTextSize = 12;
+    private int mLocationTextSize = 12;
     private int mHeaderColumnPadding = 10;
     private int mHeaderColumnTextColor = Color.BLACK;
     private int mNumberOfVisibleDays = 3;
@@ -1071,20 +1075,8 @@ public class WeekView extends View {
         if (rect.right - rect.left - mEventPadding * 2 < 0) return;
         if (rect.bottom - rect.top - mEventPadding * 2 < 0) return;
 
-        // Prepare the name of the event.
+
         SpannableStringBuilder bob = new SpannableStringBuilder();
-        if (event.getName() != null) {
-            bob.append(event.getName());
-            bob.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, bob.length(), 0);
-
-            bob.append(' ');
-        }
-
-        // Prepare the location of the event.
-        if (event.getLocation() != null) {
-            bob.append(event.getLocation());
-            bob.append(' ');
-        }
 
         // Prepare the start - endtime of the event.
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
@@ -1092,8 +1084,26 @@ public class WeekView extends View {
 
         String dateString = String.format(dateFormatString, sdf.format(event.getStartTime().getTime()), sdf.format(event.getEndTime().getTime()));
         bob.append(dateString);
+        bob.append(" \n");
+        bob.setSpan(new AbsoluteSizeSpan(mTimeTextSize, true), 0, bob.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        //bob.setSpan(new ForegroundColorSpan(event.getTextColor()), 0, bob.length(), 0);
+        // Prepare the location of the event.
+        if (event.getLocation() != null) {
+            int eventLocationStart = bob.length();
+            bob.append(event.getLocation());
+            bob.append(" \n");
+            bob.setSpan(new AbsoluteSizeSpan(mLocationTextSize, true), eventLocationStart, bob.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        // Prepare the name of the event.
+        if (event.getName() != null) {
+            int eventNameStart = bob.length();
+            bob.append(event.getName());
+            bob.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), eventNameStart, bob.length(), 0);
+
+            //bob.append(' ');
+        }
+
         mEventTextPaint.setColor(event.getTextColor());
 
         int availableHeight = (int) (rect.bottom - originalTop - mEventPadding * 2);
@@ -1639,6 +1649,22 @@ public class WeekView extends View {
         mHeaderTextPaint.setTextSize(mTextSize);
         mTimeTextPaint.setTextSize(mTextSize);
         invalidate();
+    }
+
+    public int getLocationTextSize() {
+        return mLocationTextSize;
+    }
+
+    public void setLocationTextSize(int size) {
+        this.mLocationTextSize = size
+    }
+
+    public int getTimeTextSize() {
+        return mTimeTextSize;
+    }
+
+    public void setTimeTextSize(int size) {
+        this.mTimeTextSize = size;
     }
 
     public int getHeaderColumnPadding() {
