@@ -1088,7 +1088,7 @@ public class WeekView extends View {
         bob.setSpan(new AbsoluteSizeSpan(mTimeTextSize, true), 0, bob.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         // Prepare the location of the event.
-        if (event.getLocation() != null) {
+        if (event.getLocation() != null && !event.getLocation().isEmpty()) {
             int eventLocationStart = bob.length();
             bob.append(event.getLocation());
             bob.append(" \n");
