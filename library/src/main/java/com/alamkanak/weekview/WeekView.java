@@ -119,8 +119,8 @@ public class WeekView extends View {
     private int mColumnGap = 10;
     private int mFirstDayOfWeek = Calendar.MONDAY;
     private int mTextSize = 12;
-    private int mTimeTextSize = 12;
-    private int mLocationTextSize = 12;
+    private int mTimeTextSize = 26;
+    private int mLocationTextSize = 26;
     private int mHeaderColumnPadding = 10;
     private int mHeaderColumnTextColor = Color.BLACK;
     private int mNumberOfVisibleDays = 3;
