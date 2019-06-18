@@ -171,7 +171,6 @@ public class WeekView extends View {
 
         @Override
         public boolean onDown(MotionEvent e) {
-            Log.d("WeekView","onDown");
             goToNearestOrigin();
             return true;
         }
@@ -180,7 +179,7 @@ public class WeekView extends View {
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 
             Log.d("WeekView", "onScroll "+"X:"+distanceX +" / "+"Y:"+distanceY);
-            // Check if view is zoomed.
+            // Check if zooming
             if (mIsZooming)
                 return true;
 
@@ -489,7 +488,7 @@ public class WeekView extends View {
         // Set default event color.
         mDefaultEventColor = Color.parseColor("#9fc6e7");
 
-        mScaleDetector = new ScaleGestureDetector(mContext, new ScaleGestureDetector.OnScaleGestureListener() {
+        /*mScaleDetector = new ScaleGestureDetector(mContext, new ScaleGestureDetector.OnScaleGestureListener() {
             @Override
             public void onScaleEnd(ScaleGestureDetector detector) {
                 mIsZooming = false;
@@ -508,7 +507,7 @@ public class WeekView extends View {
                 invalidate();
                 return true;
             }
-        });
+        }); */
     }
 
     public void resetHomeDate() {
@@ -1100,8 +1099,6 @@ public class WeekView extends View {
             int eventNameStart = bob.length();
             bob.append(event.getName());
             bob.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), eventNameStart, bob.length(), 0);
-
-            //bob.append(' ');
         }
 
         mEventTextPaint.setColor(event.getTextColor());
@@ -2202,7 +2199,7 @@ public class WeekView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         Log.d("WeekView","onTouchEvent"+ " Action: "+event.getAction());
-        mScaleDetector.onTouchEvent(event);
+        //mScaleDetector.onTouchEvent(event);
         boolean val = mGestureDetector.onTouchEvent(event);
 
         // Check after call of mGestureDetector, so mCurrentFlingDirection and mCurrentScrollDirection are set.
