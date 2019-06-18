@@ -1,6 +1,12 @@
 apply plugin: 'com.android.library'
 
+apply plugin: 'maven-publish'
+
+def artifactId = 'Android-Week-View'
+def groupId = 'com.github.aprummer'
+
 repositories {
+
     mavenCentral()
 }
 
@@ -11,11 +17,25 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 23
+        versionCode 1
+        versionName "1.1"
     }
 }
 
 dependencies {
     implementation 'com.android.support:appcompat-v7:23.1.1'
+}
+
+publishing {
+    publications {
+        library(MavenPublication) {
+            setGroupId(groupId)
+            setArtifactId(artifactId)
+            version android.defaultConfig.versionName
+
+            artifact(bundleReleaseAar)
+        }
+    }
 }
 
 //apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'

@@ -2,6 +2,7 @@
 
 buildscript {
     repositories {
+        mavenLocal()
         jcenter()
         maven {
             url 'https://maven.google.com/'
@@ -15,6 +16,11 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
+plugins {
+    // This plugin allows publishing android libraries
+    id "com.github.dcendents.android-maven" version "2.0"
+}
+
 
 allprojects {
     version = VERSION_NAME
