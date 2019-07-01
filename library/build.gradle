@@ -11,12 +11,12 @@ repositories {
 }
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 26
     buildToolsVersion '28.0.3'
 
     defaultConfig {
-        minSdkVersion 9
-        targetSdkVersion 23
+        minSdkVersion 23
+        targetSdkVersion 26
         versionCode 1
         versionName "1.1"
     }
