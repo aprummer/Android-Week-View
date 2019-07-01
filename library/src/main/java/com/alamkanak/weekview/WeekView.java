@@ -339,6 +339,11 @@ public class WeekView extends View {
         }
     };
 
+    public void scrollToXY(float x, float y) {
+        mScroller.startScroll((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, (int) x, (int) y, 0);
+        reload();
+    }
+
     public void reload() {
         ViewCompat.postInvalidateOnAnimation(WeekView.this);
     }
