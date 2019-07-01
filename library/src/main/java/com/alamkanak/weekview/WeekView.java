@@ -339,6 +339,10 @@ public class WeekView extends View {
         }
     };
 
+    public void reload() {
+        ViewCompat.postInvalidateOnAnimation(WeekView.this);
+    }
+
     public WeekView(Context context) {
         this(context, null);
     }
@@ -2193,6 +2197,15 @@ public class WeekView extends View {
      */
     public void setScrollDuration(int scrollDuration) {
         mScrollDuration = scrollDuration;
+    }
+
+    public void setCurrentOrigin( float x, float y) {
+        this.mCurrentOrigin.x = x;
+        this.mCurrentOrigin.y = y;
+    }
+
+    public PointF getCurrentOrigin() {
+        return this.mCurrentOrigin;
     }
 
     /////////////////////////////////////////////////////////////////
