@@ -2,6 +2,10 @@ apply plugin: 'com.android.library'
 
 apply plugin: 'maven-publish'
 
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+
 def artifactId = 'Android-Week-View'
 def groupId = 'com.github.aprummer'
 
@@ -23,19 +27,25 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:appcompat-v7:23.1.1'
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.10"
+    implementation 'androidx.room:room-runtime:2.1.0'
+    kapt 'androidx.room:room-compiler:2.1.0'
 }
 
-publishing {
-    publications {
-        library(MavenPublication) {
-            setGroupId(groupId)
-            setArtifactId(artifactId)
-            version android.defaultConfig.versionName
+project.afterEvaluate {
+    publishing {
+        publications {
+            library(MavenPublication) {
+                setGroupId(groupId)
+                setArtifactId(artifactId)
+                version android.defaultConfig.versionName
 
-            artifact(bundleReleaseAar)
+                artifact(bundleReleaseAar)
+            }
         }
     }
 }
+
 
 //apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'

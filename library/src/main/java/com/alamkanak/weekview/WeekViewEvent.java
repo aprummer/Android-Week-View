@@ -1,5 +1,8 @@
 package com.alamkanak.weekview;
 
+import androidx.room.ColumnInfo;
+import androidx.room.PrimaryKey;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -11,7 +14,9 @@ import static com.alamkanak.weekview.WeekViewUtil.*;
  * Website: http://april-shower.com
  */
 public class WeekViewEvent {
-    private long mId;
+    @PrimaryKey(autoGenerate = false)
+    @ColumnInfo(name="id")
+    private long id;
     private Calendar mStartTime;
     private Calendar mEndTime;
     private String mName;
@@ -40,7 +45,7 @@ public class WeekViewEvent {
      * @param endMinute Minute when the event ends.
      */
     public WeekViewEvent(long id, String name, int startYear, int startMonth, int startDay, int startHour, int startMinute, int endYear, int endMonth, int endDay, int endHour, int endMinute) {
-        this.mId = id;
+        this.id = id;
 
         this.mStartTime = Calendar.getInstance();
         this.mStartTime.set(Calendar.YEAR, startYear);
@@ -69,7 +74,7 @@ public class WeekViewEvent {
      * @param allDay Is the event an all day event.
      */
     public WeekViewEvent(long id, String name, String location, Calendar startTime, Calendar endTime, boolean allDay) {
-        this.mId = id;
+        this.id = id;
         this.mName = name;
         this.mLocation = location;
         this.mStartTime = startTime;
@@ -154,11 +159,11 @@ public class WeekViewEvent {
     }
 
     public long getId() {
-        return mId;
+        return id;
     }
 
     public void setId(long id) {
-        this.mId = id;
+        this.id = id;
     }
 
     @Override
@@ -168,13 +173,13 @@ public class WeekViewEvent {
 
         WeekViewEvent that = (WeekViewEvent) o;
 
-        return mId == that.mId;
+        return id == that.id;
 
     }
 
     @Override
     public int hashCode() {
-        return (int) (mId ^ (mId >>> 32));
+        return (int) (id ^ (id >>> 32));
     }
 
     public List<WeekViewEvent> splitWeekViewEvents(){
