@@ -227,6 +227,7 @@ public class WeekView extends View {
             switch (mCurrentScrollDirection) {
                 case LEFT:
                 case RIGHT:
+                    Log.d("ONSCROLL", "DistanceX: "+distanceX +"/"+ "Speed: "+mXScrollingSpeed);
                     float minX = getXMinLimit();
                     float maxX = getXMaxLimit();
                     if ((mCurrentOrigin.x - (distanceX * mXScrollingSpeed)) > maxX) {
@@ -2241,7 +2242,7 @@ public class WeekView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        mScaleDetector.onTouchEvent(event);
+        //mScaleDetector.onTouchEvent(event);
         boolean val = mGestureDetector.onTouchEvent(event);
 
         // Check after call of mGestureDetector, so mCurrentFlingDirection and mCurrentScrollDirection are set.
