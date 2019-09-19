@@ -1,7 +1,11 @@
 package com.alamkanak.weekview.sample;
 
+import android.graphics.Color;
+
 import com.alamkanak.weekview.WeekViewEvent;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -18,144 +22,205 @@ public class BasicActivity extends BaseActivity {
         // Populate the week view with some events.
         List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
 
-        Calendar startTime = Calendar.getInstance();
-        startTime.set(Calendar.HOUR_OF_DAY, 3);
-        startTime.set(Calendar.MINUTE, 0);
-        startTime.set(Calendar.MONTH, newMonth - 1);
-        startTime.set(Calendar.YEAR, newYear);
-        Calendar endTime = (Calendar) startTime.clone();
-        endTime.add(Calendar.HOUR, 1);
-        endTime.set(Calendar.MONTH, newMonth - 1);
-        WeekViewEvent event = new WeekViewEvent(1, getEventTitle(startTime), startTime, endTime);
-        event.setColor(getResources().getColor(R.color.event_color_01));
-        events.add(event);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-        startTime = Calendar.getInstance();
-        startTime.set(Calendar.HOUR_OF_DAY, 3);
-        startTime.set(Calendar.MINUTE, 30);
-        startTime.set(Calendar.MONTH, newMonth-1);
-        startTime.set(Calendar.YEAR, newYear);
-        endTime = (Calendar) startTime.clone();
-        endTime.set(Calendar.HOUR_OF_DAY, 4);
-        endTime.set(Calendar.MINUTE, 30);
-        endTime.set(Calendar.MONTH, newMonth-1);
-        event = new WeekViewEvent(10, getEventTitle(startTime), startTime, endTime);
-        event.setColor(getResources().getColor(R.color.event_color_02));
-        events.add(event);
+        try {
 
-        startTime = Calendar.getInstance();
-        startTime.set(Calendar.HOUR_OF_DAY, 4);
-        startTime.set(Calendar.MINUTE, 20);
-        startTime.set(Calendar.MONTH, newMonth-1);
-        startTime.set(Calendar.YEAR, newYear);
-        endTime = (Calendar) startTime.clone();
-        endTime.set(Calendar.HOUR_OF_DAY, 5);
-        endTime.set(Calendar.MINUTE, 0);
-        event = new WeekViewEvent(10, getEventTitle(startTime), startTime, endTime);
-        event.setColor(getResources().getColor(R.color.event_color_03));
-        events.add(event);
+            Calendar startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T09:00:00+02:00"));
+            Calendar endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T09:30:00+02:00"));
+            WeekViewEvent event = new WeekViewEvent("1", "Frühstück/Empfang ??", startTime, endTime);
+            event.setColor(Color.parseColor("#7f8c8d"));
+            events.add(event);
 
-        startTime = Calendar.getInstance();
-        startTime.set(Calendar.HOUR_OF_DAY, 5);
-        startTime.set(Calendar.MINUTE, 30);
-        startTime.set(Calendar.MONTH, newMonth-1);
-        startTime.set(Calendar.YEAR, newYear);
-        endTime = (Calendar) startTime.clone();
-        endTime.add(Calendar.HOUR_OF_DAY, 2);
-        endTime.set(Calendar.MONTH, newMonth-1);
-        event = new WeekViewEvent(2, getEventTitle(startTime), startTime, endTime);
-        event.setColor(getResources().getColor(R.color.event_color_02));
-        events.add(event);
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T09:30:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T10:00:00+02:00"));
+            event = new WeekViewEvent("Second", "Eröffnung", startTime, endTime);
+            event.setColor(Color.parseColor("#e74c3c"));
+            events.add(event);
 
-        startTime = Calendar.getInstance();
-        startTime.set(Calendar.HOUR_OF_DAY, 5);
-        startTime.set(Calendar.MINUTE, 0);
-        startTime.set(Calendar.MONTH, newMonth - 1);
-        startTime.set(Calendar.YEAR, newYear);
-        startTime.add(Calendar.DATE, 1);
-        endTime = (Calendar) startTime.clone();
-        endTime.add(Calendar.HOUR_OF_DAY, 3);
-        endTime.set(Calendar.MONTH, newMonth - 1);
-        event = new WeekViewEvent(3, getEventTitle(startTime), startTime, endTime);
-        event.setColor(getResources().getColor(R.color.event_color_03));
-        events.add(event);
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T09:30:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T14:30:00+02:00"));
+            event = new WeekViewEvent(10, "Ganzheits-Side-Programm", startTime, endTime);
+            event.setColor(Color.parseColor("#9b59b6"));
+            events.add(event);
 
-        startTime = Calendar.getInstance();
-        startTime.set(Calendar.DAY_OF_MONTH, 15);
-        startTime.set(Calendar.HOUR_OF_DAY, 3);
-        startTime.set(Calendar.MINUTE, 0);
-        startTime.set(Calendar.MONTH, newMonth-1);
-        startTime.set(Calendar.YEAR, newYear);
-        endTime = (Calendar) startTime.clone();
-        endTime.add(Calendar.HOUR_OF_DAY, 3);
-        event = new WeekViewEvent(4, getEventTitle(startTime), startTime, endTime);
-        event.setColor(getResources().getColor(R.color.event_color_04));
-        events.add(event);
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T10:00:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T11:15:00+02:00"));
+            event = new WeekViewEvent(2, "Keynote Uwe Lübbermann", startTime, endTime);
+            event.setColor(Color.parseColor("#ff9800"));
+            events.add(event);
 
-        startTime = Calendar.getInstance();
-        startTime.set(Calendar.DAY_OF_MONTH, 1);
-        startTime.set(Calendar.HOUR_OF_DAY, 3);
-        startTime.set(Calendar.MINUTE, 0);
-        startTime.set(Calendar.MONTH, newMonth-1);
-        startTime.set(Calendar.YEAR, newYear);
-        endTime = (Calendar) startTime.clone();
-        endTime.add(Calendar.HOUR_OF_DAY, 3);
-        event = new WeekViewEvent(5, getEventTitle(startTime), startTime, endTime);
-        event.setColor(getResources().getColor(R.color.event_color_01));
-        events.add(event);
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T11:15:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T11:45:00+02:00"));
+            event = new WeekViewEvent(3, "Pause", startTime, endTime);
+            event.setColor(Color.parseColor("#7f8c8d"));
+            events.add(event);
 
-        startTime = Calendar.getInstance();
-        startTime.set(Calendar.DAY_OF_MONTH, startTime.getActualMaximum(Calendar.DAY_OF_MONTH));
-        startTime.set(Calendar.HOUR_OF_DAY, 15);
-        startTime.set(Calendar.MINUTE, 0);
-        startTime.set(Calendar.MONTH, newMonth-1);
-        startTime.set(Calendar.YEAR, newYear);
-        endTime = (Calendar) startTime.clone();
-        endTime.add(Calendar.HOUR_OF_DAY, 3);
-        event = new WeekViewEvent(5, getEventTitle(startTime), startTime, endTime);
-        event.setColor(getResources().getColor(R.color.event_color_02));
-        events.add(event);
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T11:45:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T12:15:00+02:00"));
+            event = new WeekViewEvent(4, "Marketplace Open Space", startTime, endTime);
+            event.setColor(Color.parseColor("#e74c3c"));
+            events.add(event);
 
-        //AllDay event
-        startTime = Calendar.getInstance();
-        startTime.set(Calendar.HOUR_OF_DAY, 0);
-        startTime.set(Calendar.MINUTE, 0);
-        startTime.set(Calendar.MONTH, newMonth-1);
-        startTime.set(Calendar.YEAR, newYear);
-        endTime = (Calendar) startTime.clone();
-        endTime.add(Calendar.HOUR_OF_DAY, 23);
-        event = new WeekViewEvent(7, getEventTitle(startTime),null, startTime, endTime, true);
-        event.setColor(getResources().getColor(R.color.event_color_04));
-        events.add(event);
-        events.add(event);
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T12:15:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T12:45:00+02:00"));
+            event = new WeekViewEvent(4, "Vorstellung Pionierstationen", startTime, endTime);
+            event.setColor(Color.parseColor("#e74c3c"));
+            events.add(event);
 
-        startTime = Calendar.getInstance();
-        startTime.set(Calendar.DAY_OF_MONTH, 8);
-        startTime.set(Calendar.HOUR_OF_DAY, 2);
-        startTime.set(Calendar.MINUTE, 0);
-        startTime.set(Calendar.MONTH, newMonth-1);
-        startTime.set(Calendar.YEAR, newYear);
-        endTime = (Calendar) startTime.clone();
-        endTime.set(Calendar.DAY_OF_MONTH, 10);
-        endTime.set(Calendar.HOUR_OF_DAY, 23);
-        event = new WeekViewEvent(8, getEventTitle(startTime),null, startTime, endTime, true);
-        event.setColor(getResources().getColor(R.color.event_color_03));
-        events.add(event);
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T12:45:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T14:00:00+02:00"));
+            event = new WeekViewEvent(5, "Mittagessen", startTime, endTime);
+            event.setColor(Color.parseColor("#7f8c8d"));
+            events.add(event);
 
-        // All day event until 00:00 next day
-        startTime = Calendar.getInstance();
-        startTime.set(Calendar.DAY_OF_MONTH, 10);
-        startTime.set(Calendar.HOUR_OF_DAY, 0);
-        startTime.set(Calendar.MINUTE, 0);
-        startTime.set(Calendar.SECOND, 0);
-        startTime.set(Calendar.MILLISECOND, 0);
-        startTime.set(Calendar.MONTH, newMonth-1);
-        startTime.set(Calendar.YEAR, newYear);
-        endTime = (Calendar) startTime.clone();
-        endTime.set(Calendar.DAY_OF_MONTH, 11);
-        event = new WeekViewEvent(8, getEventTitle(startTime), null, startTime, endTime, true);
-        event.setColor(getResources().getColor(R.color.event_color_01));
-        events.add(event);
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T14:00:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T14:30:00+02:00"));
+            event = new WeekViewEvent(6, "Reflexion", startTime, endTime);
+            event.setColor(Color.parseColor("#e74c3c"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T14:30:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T15:30:00+02:00"));
+            event = new WeekViewEvent(7, "Pionierstationen Teil 1", startTime, endTime);
+            event.setColor(Color.parseColor("#3498db"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T14:30:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T15:30:00+02:00"));
+            event = new WeekViewEvent(8, "Open Space Teil 1", startTime, endTime);
+            event.setColor(Color.parseColor("#f1c40f"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T14:30:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T17:00:00+02:00"));
+            event = new WeekViewEvent(9, "Miniworkshops", startTime, endTime);
+            event.setColor(Color.parseColor("#f1c40f"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T15:30:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T16:30:00+02:00"));
+            event = new WeekViewEvent(10, "Pionierstationen Teil 2", startTime, endTime);
+            event.setColor(Color.parseColor("#3498db"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T15:30:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T16:30:00+02:00"));
+            event = new WeekViewEvent(11, "Open Space Teil 2", startTime, endTime);
+            event.setColor(Color.parseColor("#f1c40f"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T16:30:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T17:00:00+02:00"));
+            event = new WeekViewEvent(12, "Pause", startTime, endTime);
+            event.setColor(Color.parseColor("#7f8c8d"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T16:30:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T17:00:00+02:00"));
+            event = new WeekViewEvent(13, "Pause", startTime, endTime);
+            event.setColor(Color.parseColor("#7f8c8d"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T17:00:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T18:00:00+02:00"));
+            event = new WeekViewEvent(14, "Pionierstationen Teil 3", startTime, endTime);
+            event.setColor(Color.parseColor("#3498db"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T17:00:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T18:00:00+02:00"));
+            event = new WeekViewEvent(15, "Open Space Teil 3", startTime, endTime);
+            event.setColor(Color.parseColor("#f1c40f"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T18:00:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T18:30:00+02:00"));
+            event = new WeekViewEvent(16, "Reflexion", startTime, endTime);
+            event.setColor(Color.parseColor("#e74c3c"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T18:30:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T19:30:00+02:00"));
+            event = new WeekViewEvent(17, "Sektempfang", startTime, endTime);
+            event.setColor(Color.parseColor("#7f8c8d"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-13T19:30:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-13T21:00:00+02:00"));
+            event = new WeekViewEvent(18, "Abendessen", startTime, endTime);
+            event.setColor(Color.parseColor("#7f8c8d"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-14T09:00:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-14T10:00:00+02:00"));
+            event = new WeekViewEvent(19, "Frühstück", startTime, endTime);
+            event.setColor(Color.parseColor("#7f8c8d"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-14T14:45:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-14T15:15:00+02:00"));
+            event = new WeekViewEvent(20, "Test", startTime, endTime);
+            event.setColor(Color.parseColor("#e74c3c"));
+            events.add(event);
+
+            startTime = Calendar.getInstance();
+            startTime.setTime(sdf.parse("2019-05-15T15:30:00+02:00"));
+            endTime = (Calendar) startTime.clone();
+            endTime.setTime(sdf.parse("2019-05-15T16:30:00+02:00"));
+            event = new WeekViewEvent(21, "Open Space Teil 2", startTime, endTime);
+            event.setColor(Color.parseColor("#f1c40f"));
+            events.add(event);
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
         return events;
     }
