@@ -30,7 +30,7 @@ public class BasicActivity extends BaseActivity {
             startTime.setTime(sdf.parse("2019-05-13T09:00:00+02:00"));
             Calendar endTime = (Calendar) startTime.clone();
             endTime.setTime(sdf.parse("2019-05-13T09:30:00+02:00"));
-            WeekViewEvent event = new WeekViewEvent("1", "Frühstück/Empfang ??", startTime, endTime);
+            WeekViewEvent event = new WeekViewEvent(1, "Frühstück/Empfang ??", startTime, endTime);
             event.setColor(Color.parseColor("#7f8c8d"));
             events.add(event);
 
@@ -38,7 +38,7 @@ public class BasicActivity extends BaseActivity {
             startTime.setTime(sdf.parse("2019-05-13T09:30:00+02:00"));
             endTime = (Calendar) startTime.clone();
             endTime.setTime(sdf.parse("2019-05-13T10:00:00+02:00"));
-            event = new WeekViewEvent("Second", "Eröffnung", startTime, endTime);
+            event = new WeekViewEvent(22, "Eröffnung", startTime, endTime);
             event.setColor(Color.parseColor("#e74c3c"));
             events.add(event);
 
@@ -78,7 +78,7 @@ public class BasicActivity extends BaseActivity {
             startTime.setTime(sdf.parse("2019-05-13T12:15:00+02:00"));
             endTime = (Calendar) startTime.clone();
             endTime.setTime(sdf.parse("2019-05-13T12:45:00+02:00"));
-            event = new WeekViewEvent(4, "Vorstellung Pionierstationen", startTime, endTime);
+            event = new WeekViewEvent(23, "Vorstellung Pionierstationen", startTime, endTime);
             event.setColor(Color.parseColor("#e74c3c"));
             events.add(event);
 
