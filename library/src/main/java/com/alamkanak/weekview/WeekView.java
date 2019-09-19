@@ -13,6 +13,7 @@ import android.os.Build;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.ViewConfigurationCompat;
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator;
 import android.text.Layout;
 import android.text.Spannable;
@@ -156,6 +157,7 @@ public class WeekView extends View {
     private int mScrollDuration = 250;
 
     private boolean mayScroll = false;
+    private boolean didFling = false;
 
     // Listeners.
     private EventClickListener mEventClickListener;
@@ -359,33 +361,87 @@ public class WeekView extends View {
         public void onSwipeRight(float distanceX, float velocityX) {
             float minX = getXMinLimit();
             float maxX = getXMaxLimit();
-            Log.d(this.getClass().getSimpleName(),"SWIPE RIGHT, distance: "+distanceX);
+            Log.d(this.getClass().getSimpleName(),"SWIPE RIGHT, distance: "+distanceX+ " / velocity: "+velocityX);
             Log.d(this.getClass().getSimpleName(), "MinX: "+minX+ " / MaxX: "+maxX);
             Log.d(this.getClass().getSimpleName(), "DayWitdth: "+mWidthPerDay+ " / ColumnGap: "+mColumnGap);
             Log.d(this.getClass().getSimpleName(),"CurrentOriginX: "+mCurrentOrigin.x);
+
+            Log.d(this.getClass().getSimpleName(),"MaximumFlingVelocity: "+ ViewConfiguration.get(getContext()).getScaledMaximumFlingVelocity());
+            //if( velocityX < 5000) velocityX = 5000;
+            velocityX = ViewConfiguration.get(getContext()).getScaledMaximumFlingVelocity();
+            int maxBorderX, minBorderX;
             if ((mCurrentOrigin.x + (distanceX * mXScrollingSpeed)) > maxX) {
-                mCurrentOrigin.x = maxX;
                 Log.d(this.getClass().getSimpleName(), "MIN");
+                //mCurrentOrigin.x = maxX;
+
+                maxBorderX = (int) maxX;
+                minBorderX = (int) mCurrentOrigin.x;
+
             } else {
-                mCurrentOrigin.x += mWidthPerDay + mColumnGap;
+                //mCurrentOrigin.x += mWidthPerDay + mColumnGap;
                 Log.d(this.getClass().getSimpleName(), "ONE DAY");
+
+                maxBorderX = (int) (mCurrentOrigin.x + mWidthPerDay + mColumnGap);
+                minBorderX = (int) mCurrentOrigin.x;
+
             }
+
+            Log.d(this.getClass().getSimpleName(),"MaxBorderX: "+maxBorderX+" / MinBorderX: "+minBorderX);
+            mScroller.fling(
+                    (int)mCurrentOrigin.x,
+                    (int)mCurrentOrigin.y,
+                    (int)velocityX,
+                    0,
+                    (int)minBorderX,
+                    (int)maxBorderX,
+                    (int)mCurrentOrigin.y,
+                    (int)mCurrentOrigin.y,
+                    0,
+                    0
+            );
+            didFling = true;
         }
 
         public void onSwipeLeft(float distanceX, float velocityX) {
             float minX = getXMinLimit();
             float maxX = getXMaxLimit();
-            Log.d(this.getClass().getSimpleName(),"SWIPE LEFT, distance: "+distanceX);
+            Log.d(this.getClass().getSimpleName(),"SWIPE LEFT, distance: "+distanceX+ " / velocity: "+velocityX);
             Log.d(this.getClass().getSimpleName(), "MinX: "+minX+ " / MaxX: "+maxX);
             Log.d(this.getClass().getSimpleName(), "DayWitdth: "+mWidthPerDay+ " / ColumnGap: "+mColumnGap);
             Log.d(this.getClass().getSimpleName(),"CurrentOriginX: "+mCurrentOrigin.x);
+
+            Log.d(this.getClass().getSimpleName(),"MaximumFlingVelocity: "+ ViewConfiguration.get(getContext()).getScaledMaximumFlingVelocity());
+            //if( velocityX > -5000) velocityX = -5000;
+            velocityX = -ViewConfiguration.get(getContext()).getScaledMaximumFlingVelocity();
+            int maxBorderX, minBorderX;
             if ((mCurrentOrigin.x + (distanceX * mXScrollingSpeed)) < minX) {
-                mCurrentOrigin.x = minX;
+                //mCurrentOrigin.x = minX;
                 Log.d(this.getClass().getSimpleName(), "MAX");
+
+                maxBorderX = (int) minX;
+                minBorderX = (int) mCurrentOrigin.x;
             } else {
-                mCurrentOrigin.x -= mWidthPerDay + mColumnGap;
+                //mCurrentOrigin.x -= mWidthPerDay + mColumnGap;
                 Log.d(this.getClass().getSimpleName(), "ONE DAY");
+
+                maxBorderX = (int) (mCurrentOrigin.x - mWidthPerDay + mColumnGap);
+                minBorderX = (int) mCurrentOrigin.x;
             }
+
+            Log.d(this.getClass().getSimpleName(),"MaxBorderX: "+maxBorderX+" / MinBorderX: "+minBorderX);
+            mScroller.fling(
+                    (int)mCurrentOrigin.x,
+                    (int)mCurrentOrigin.y,
+                    (int)velocityX,
+                    0,
+                    (int)maxBorderX,
+                    (int)minBorderX,
+                    (int)mCurrentOrigin.y,
+                    (int)mCurrentOrigin.y,
+                    0,
+                    0
+            );
+            didFling = true;
         }
 
 
@@ -2331,16 +2387,15 @@ public class WeekView extends View {
         //mScaleDetector.onTouchEvent(event);
         boolean val = mGestureDetector.onTouchEvent(event);
 
-        Log.d(this.getClass().getSimpleName(), "Check Action");
         switch( event.getAction() ) {
             case MotionEvent.ACTION_DOWN: {
                 mayScroll = true;
-                Log.d(this.getClass().getSimpleName(), "ACTION_DOWN, mayScroll: "+mayScroll);
+                Log.d(this.getClass().getSimpleName(), "ACTION_DOWN");
             }
                 break;
             case MotionEvent.ACTION_UP: {
                 mayScroll = false;
-                Log.d(this.getClass().getSimpleName(), "ACTION_UP, mayScroll: "+mayScroll);
+                Log.d(this.getClass().getSimpleName(), "ACTION_UP");
             }
                 break;
         }
@@ -2364,24 +2419,35 @@ public class WeekView extends View {
         if (mCurrentFlingDirection != Direction.NONE) {
             // snap to nearest day
             leftDays = Math.round(leftDays);
+            Log.d(this.getClass().getSimpleName(), "SNAP to NEAREST day (NONE)");
         } else if (mCurrentScrollDirection == Direction.LEFT) {
             // snap to last day
             leftDays = Math.floor(leftDays);
+            Log.d(this.getClass().getSimpleName(), "SNAP to LAST day");
         } else if (mCurrentScrollDirection == Direction.RIGHT) {
             // snap to next day
             leftDays = Math.ceil(leftDays);
+            Log.d(this.getClass().getSimpleName(), "SNAP to NEXT day");
         } else {
             // snap to nearest day
             leftDays = Math.round(leftDays);
+            Log.d(this.getClass().getSimpleName(), "SNAP to NEAREST day (else)");
         }
 
         int nearestOrigin = (int) (mCurrentOrigin.x - leftDays * (mWidthPerDay + mColumnGap));
         boolean mayScrollHorizontal = mCurrentOrigin.x - nearestOrigin < getXMaxLimit()
                 && mCurrentOrigin.x - nearestOrigin > getXMinLimit();
 
-        if (mayScrollHorizontal) {
+        /*if (mayScrollHorizontal) {
             Log.d(this.getClass().getSimpleName(),"goToNearestOrigin - start scroll");
-            mScroller.startScroll((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, -nearestOrigin, 0);
+            mScroller.startScroll((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, -nearestOrigin, 0, 250);
+            ViewCompat.postInvalidateOnAnimation(WeekView.this);
+        } */
+
+        if( didFling ) {
+            Log.d(this.getClass().getSimpleName(),"didFling -> Animate");
+            mScroller.startScroll((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, -nearestOrigin, 0, 0);
+            didFling = false;
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
         }
 
@@ -2402,25 +2468,24 @@ public class WeekView extends View {
     public void computeScroll() {
         super.computeScroll();
 
-        Log.d(this.getClass().getSimpleName(), "computeScroll");
         if (mScroller.isFinished()) {
+            Log.d(this.getClass().getSimpleName(), "computeScroll: Scroller is finished");
             if (mCurrentFlingDirection != Direction.NONE) {
                 // Snap to day after fling is finished.
-                Log.d(this.getClass().getSimpleName(),"computeScroll direction NONE goToNearestOrigin");
+                Log.d(this.getClass().getSimpleName(), "computeScroll: direction NONE goToNearestOrigin");
                 goToNearestOrigin();
             }
         } else {
             if (mCurrentFlingDirection != Direction.NONE && forceFinishScroll()) {
                 goToNearestOrigin();
-                Log.d(this.getClass().getSimpleName(),"computeScroll else goToNearestOrigin");
+                Log.d(this.getClass().getSimpleName(), "computeScroll: else goToNearestOrigin");
             } else if (mScroller.computeScrollOffset()) {
-                Log.d(this.getClass().getSimpleName(),"computeScrollOffset");
+                Log.d(this.getClass().getSimpleName(), "computeScroll: Offset");
                 mCurrentOrigin.y = mScroller.getCurrY();
                 mCurrentOrigin.x = mScroller.getCurrX();
                 ViewCompat.postInvalidateOnAnimation(this);
             }
         }
-        Log.d(this.getClass().getSimpleName(), "END of computeScroll; mayScroll: "+mayScroll);
     }
 
     /**
@@ -2428,7 +2493,11 @@ public class WeekView extends View {
      * @return true if scrolling should be stopped before reaching the end of animation.
      */
     private boolean forceFinishScroll() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+        Log.d(this.getClass().getSimpleName(),"forceFinishScroll");
+        Log.d(this.getClass().getSimpleName(), "Model           : "+Build.MODEL);
+        Log.d(this.getClass().getSimpleName(), "Manufacturer    : "+Build.MANUFACTURER);
+        Log.d(this.getClass().getSimpleName(), "CurrentVelocity : "+mScroller.getCurrVelocity());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH && !Build.MANUFACTURER.equalsIgnoreCase("huawei")) {
             // current velocity only available since api 14
             return mScroller.getCurrVelocity() <= mMinimumFlingVelocity;
         } else {
