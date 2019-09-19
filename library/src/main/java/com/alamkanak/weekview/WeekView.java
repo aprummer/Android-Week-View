@@ -155,6 +155,8 @@ public class WeekView extends View {
     private int mAllDayEventHeight = 100;
     private int mScrollDuration = 250;
 
+    private boolean mayScroll = false;
+
     // Listeners.
     private EventClickListener mEventClickListener;
     private EventLongPressListener mEventLongPressListener;
@@ -175,10 +177,17 @@ public class WeekView extends View {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 
-            Log.d("WeekView", "onScroll "+"X:"+distanceX +" / "+"Y:"+distanceY);
+            Log.d(this.getClass().getSimpleName(), "onScroll "+"X:"+distanceX +" / "+"Y:"+distanceY);
             // Check if zooming
-            if (mIsZooming)
+            if (mIsZooming) {
+                Log.d(this.getClass().getSimpleName(), "ZOOMING -> RETURN");
                 return true;
+            }
+
+            /*if (!mayScroll) {
+                Log.d(this.getClass().getSimpleName(), "isScrolling -> RETURN");
+                return true;
+            }*/
 
             switch (mCurrentScrollDirection) {
                 case NONE: {
@@ -211,19 +220,42 @@ public class WeekView extends View {
             }
 
             // Calculate the new origin after scroll.
+            float minX = getXMinLimit();
+            float maxX = getXMaxLimit();
             switch (mCurrentScrollDirection) {
                 case LEFT:
+                    /*if( mayScroll ) {
+                        Log.d(this.getClass().getSimpleName(), "Scroll LEFT");
+                        if ((mCurrentOrigin.x - (distanceX * mXScrollingSpeed)) > maxX) {
+                            mCurrentOrigin.x = maxX;
+                            Log.d(this.getClass().getSimpleName(), "MAX");
+                        } else if ((mCurrentOrigin.x - (distanceX * mXScrollingSpeed)) < minX) {
+                            mCurrentOrigin.x = minX;
+                            Log.d(this.getClass().getSimpleName(), "MIN");
+                        } else {
+                            mCurrentOrigin.x -= mWidthPerDay + mColumnGap;
+                            Log.d(this.getClass().getSimpleName(), "ONE DAY");
+                        }
+                        mayScroll = false;
+                        ViewCompat.postInvalidateOnAnimation(WeekView.this);
+                    } */
+                    break;
                 case RIGHT:
-                    float minX = getXMinLimit();
-                    float maxX = getXMaxLimit();
-                    if ((mCurrentOrigin.x - (distanceX * mXScrollingSpeed)) > maxX) {
-                        mCurrentOrigin.x = maxX;
-                    } else if ((mCurrentOrigin.x - (distanceX * mXScrollingSpeed)) < minX) {
-                        mCurrentOrigin.x = minX;
-                    } else {
-                        mCurrentOrigin.x -= distanceX * mXScrollingSpeed;
-                    }
-                    ViewCompat.postInvalidateOnAnimation(WeekView.this);
+                    /*if( mayScroll ) {
+                        Log.d(this.getClass().getSimpleName(), "Scroll Right");
+                        if ((mCurrentOrigin.x - (distanceX * mXScrollingSpeed)) > maxX) {
+                            mCurrentOrigin.x = maxX;
+                            Log.d(this.getClass().getSimpleName(), "MAX");
+                        } else if ((mCurrentOrigin.x - (distanceX * mXScrollingSpeed)) < minX) {
+                            mCurrentOrigin.x = minX;
+                            Log.d(this.getClass().getSimpleName(), "MIN");
+                        } else {
+                            mCurrentOrigin.x += mWidthPerDay + mColumnGap;
+                            Log.d(this.getClass().getSimpleName(), "ONE DAY");
+                        }
+                        mayScroll = false;
+                        ViewCompat.postInvalidateOnAnimation(WeekView.this);
+                    } */
                     break;
                 case VERTICAL:
                     float minY = getYMinLimit();
@@ -243,13 +275,16 @@ public class WeekView extends View {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            Log.d("WeekView","onFling");
-            if (mIsZooming)
+            Log.d(this.getClass().getSimpleName(),"onFling: mayScroll: "+mayScroll);
+            if (mIsZooming) {
+                Log.d(this.getClass().getSimpleName(), "zooming: fling aborted");
                 return true;
+            }
 
             if ((mCurrentFlingDirection == Direction.LEFT && !mHorizontalFlingEnabled) ||
                     (mCurrentFlingDirection == Direction.RIGHT && !mHorizontalFlingEnabled) ||
                     (mCurrentFlingDirection == Direction.VERTICAL && !mVerticalFlingEnabled)) {
+                Log.d(this.getClass().getSimpleName(), "Fling disabled/aborted");
                 return true;
             }
 
@@ -257,17 +292,59 @@ public class WeekView extends View {
 
             mCurrentFlingDirection = mCurrentScrollDirection;
 
-            if ((mCurrentFlingDirection == Direction.LEFT && !mHorizontalFlingEnabled) ||
+            /*if ((mCurrentFlingDirection == Direction.LEFT && !mHorizontalFlingEnabled) ||
                     (mCurrentFlingDirection == Direction.RIGHT && !mHorizontalFlingEnabled) ||
                     (mCurrentFlingDirection == Direction.VERTICAL && !mVerticalFlingEnabled )) {
+                Log.d(this.getClass().getSimpleName(), "Fling disabled/aborted after second check");
                 return true;
-            }
+            }*/
+
+            Log.d(this.getClass().getSimpleName(), "Doing Fling");
+
+            float distanceX = e2.getX() - e1.getX();
+            float distanceY = e2.getY() - e1.getY();
+
+            Log.d(this.getClass().getSimpleName(), "DistanceX: "+distanceX);
 
             switch (mCurrentFlingDirection) {
-                case LEFT:
-                case RIGHT:
-                    mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, (int) (velocityX * mXScrollingSpeed), 0, (int) getXMinLimit(), (int) getXMaxLimit(), (int) getYMinLimit(), (int) getYMaxLimit());
+                case LEFT: {
+                    Log.d(this.getClass().getSimpleName(), "Fling LEFT");
+                    /*if( mayScroll ) {
+                        if ((mCurrentOrigin.x - (distanceX * mXScrollingSpeed)) > maxX) {
+                            mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, (int) (velocityX * mXScrollingSpeed), 0, (int) getXMinLimit(), (int) getXMaxLimit(), (int) getYMinLimit(), (int) getYMaxLimit());
+                            Log.d(this.getClass().getSimpleName(), "MAX");
+                        } else if ((mCurrentOrigin.x - (distanceX * mXScrollingSpeed)) < minX) {
+                            mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, (int) (velocityX * mXScrollingSpeed), 0, (int) getXMinLimit(), (int) getXMaxLimit(), (int) getYMinLimit(), (int) getYMaxLimit());
+                            Log.d(this.getClass().getSimpleName(), "MIN");
+                        } else {
+                            realMin = mCurrentOrigin.x - (mWidthPerDay + mColumnGap);
+                            mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, (int) (velocityX * mXScrollingSpeed), 0, (int) realMin, (int) getXMaxLimit(), (int) getYMinLimit(), (int) getYMaxLimit());
+                            Log.d(this.getClass().getSimpleName(), "ONE DAY");
+                        }
+                    }*/
+                    onSwipeLeft(distanceX, velocityX);
                     break;
+                }
+                case RIGHT: {
+                    Log.d(this.getClass().getSimpleName(), "Fling Right");
+                    /*if( mayScroll ) {
+                        if ((mCurrentOrigin.x - (distanceX * mXScrollingSpeed)) > maxX) {
+                            mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, (int) (velocityX * mXScrollingSpeed), 0, (int) getXMinLimit(), (int) getXMaxLimit(), (int) getYMinLimit(), (int) getYMaxLimit());
+                            Log.d(this.getClass().getSimpleName(), "MAX");
+                        } else if ((mCurrentOrigin.x - (distanceX * mXScrollingSpeed)) < minX) {
+                            mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, (int) (velocityX * mXScrollingSpeed), 0, (int) getXMinLimit(), (int) getXMaxLimit(), (int) getYMinLimit(), (int) getYMaxLimit());
+                            Log.d(this.getClass().getSimpleName(), "MIN");
+                        } else {
+                            realMax = mCurrentOrigin.x + mWidthPerDay + mColumnGap;
+                            mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, (int) (velocityX * mXScrollingSpeed), 0, (int) getXMinLimit(), (int) realMax, (int) getYMinLimit(), (int) getYMaxLimit());
+                            Log.d(this.getClass().getSimpleName(), "ONE DAY");
+                        }
+                    }*/
+                    onSwipeRight(distanceX, velocityX);
+
+                    //mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, (int) (velocityX * mXScrollingSpeed), 0, (int) getXMinLimit(), (int) getXMaxLimit(), (int) getYMinLimit(), (int) getYMaxLimit());
+                    break;
+                }
                 case VERTICAL:
                     mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, 0, (int) velocityY, (int) getXMinLimit(), (int) getXMaxLimit(), (int) getYMinLimit(), (int) getYMaxLimit());
                     break;
@@ -277,6 +354,38 @@ public class WeekView extends View {
 
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
             return true;
+        }
+
+        public void onSwipeRight(float distanceX, float velocityX) {
+            float minX = getXMinLimit();
+            float maxX = getXMaxLimit();
+            Log.d(this.getClass().getSimpleName(),"SWIPE RIGHT, distance: "+distanceX);
+            Log.d(this.getClass().getSimpleName(), "MinX: "+minX+ " / MaxX: "+maxX);
+            Log.d(this.getClass().getSimpleName(), "DayWitdth: "+mWidthPerDay+ " / ColumnGap: "+mColumnGap);
+            Log.d(this.getClass().getSimpleName(),"CurrentOriginX: "+mCurrentOrigin.x);
+            if ((mCurrentOrigin.x + (distanceX * mXScrollingSpeed)) > maxX) {
+                mCurrentOrigin.x = maxX;
+                Log.d(this.getClass().getSimpleName(), "MIN");
+            } else {
+                mCurrentOrigin.x += mWidthPerDay + mColumnGap;
+                Log.d(this.getClass().getSimpleName(), "ONE DAY");
+            }
+        }
+
+        public void onSwipeLeft(float distanceX, float velocityX) {
+            float minX = getXMinLimit();
+            float maxX = getXMaxLimit();
+            Log.d(this.getClass().getSimpleName(),"SWIPE LEFT, distance: "+distanceX);
+            Log.d(this.getClass().getSimpleName(), "MinX: "+minX+ " / MaxX: "+maxX);
+            Log.d(this.getClass().getSimpleName(), "DayWitdth: "+mWidthPerDay+ " / ColumnGap: "+mColumnGap);
+            Log.d(this.getClass().getSimpleName(),"CurrentOriginX: "+mCurrentOrigin.x);
+            if ((mCurrentOrigin.x + (distanceX * mXScrollingSpeed)) < minX) {
+                mCurrentOrigin.x = minX;
+                Log.d(this.getClass().getSimpleName(), "MAX");
+            } else {
+                mCurrentOrigin.x -= mWidthPerDay + mColumnGap;
+                Log.d(this.getClass().getSimpleName(), "ONE DAY");
+            }
         }
 
 
@@ -2218,13 +2327,28 @@ public class WeekView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d("WeekView","onTouchEvent"+ " Action: "+event.getAction());
+        Log.d(this.getClass().getSimpleName(),"onTouchEvent"+ " Action: "+event.getAction());
         //mScaleDetector.onTouchEvent(event);
         boolean val = mGestureDetector.onTouchEvent(event);
+
+        Log.d(this.getClass().getSimpleName(), "Check Action");
+        switch( event.getAction() ) {
+            case MotionEvent.ACTION_DOWN: {
+                mayScroll = true;
+                Log.d(this.getClass().getSimpleName(), "ACTION_DOWN, mayScroll: "+mayScroll);
+            }
+                break;
+            case MotionEvent.ACTION_UP: {
+                mayScroll = false;
+                Log.d(this.getClass().getSimpleName(), "ACTION_UP, mayScroll: "+mayScroll);
+            }
+                break;
+        }
 
         // Check after call of mGestureDetector, so mCurrentFlingDirection and mCurrentScrollDirection are set.
         if (event.getAction() == MotionEvent.ACTION_UP && !mIsZooming && mCurrentFlingDirection == Direction.NONE) {
             if (mCurrentScrollDirection == Direction.RIGHT || mCurrentScrollDirection == Direction.LEFT) {
+                Log.d(this.getClass().getSimpleName(), "onTouchEvent go to nearest origin");
                 goToNearestOrigin();
             }
             mCurrentScrollDirection = Direction.NONE;
@@ -2234,6 +2358,7 @@ public class WeekView extends View {
     }
 
     private void goToNearestOrigin(){
+        Log.d(this.getClass().getSimpleName(), "GO TO NEAREST ORIGIN");
         double leftDays = mCurrentOrigin.x / (mWidthPerDay + mColumnGap);
 
         if (mCurrentFlingDirection != Direction.NONE) {
@@ -2255,6 +2380,7 @@ public class WeekView extends View {
                 && mCurrentOrigin.x - nearestOrigin > getXMinLimit();
 
         if (mayScrollHorizontal) {
+            Log.d(this.getClass().getSimpleName(),"goToNearestOrigin - start scroll");
             mScroller.startScroll((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, -nearestOrigin, 0);
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
         }
@@ -2263,6 +2389,7 @@ public class WeekView extends View {
             // Stop current animation.
             mScroller.forceFinished(true);
             // Snap to date.
+            Log.d(this.getClass().getSimpleName(),"goToNearestOrigin - nearestOrigin != 0 - start scroll");
             mScroller.startScroll((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, -nearestOrigin, 0, (int) (Math.abs(nearestOrigin) / mWidthPerDay * mScrollDuration));
             ViewCompat.postInvalidateOnAnimation(WeekView.this);
         }
@@ -2275,20 +2402,25 @@ public class WeekView extends View {
     public void computeScroll() {
         super.computeScroll();
 
+        Log.d(this.getClass().getSimpleName(), "computeScroll");
         if (mScroller.isFinished()) {
             if (mCurrentFlingDirection != Direction.NONE) {
                 // Snap to day after fling is finished.
+                Log.d(this.getClass().getSimpleName(),"computeScroll direction NONE goToNearestOrigin");
                 goToNearestOrigin();
             }
         } else {
             if (mCurrentFlingDirection != Direction.NONE && forceFinishScroll()) {
                 goToNearestOrigin();
+                Log.d(this.getClass().getSimpleName(),"computeScroll else goToNearestOrigin");
             } else if (mScroller.computeScrollOffset()) {
+                Log.d(this.getClass().getSimpleName(),"computeScrollOffset");
                 mCurrentOrigin.y = mScroller.getCurrY();
                 mCurrentOrigin.x = mScroller.getCurrX();
                 ViewCompat.postInvalidateOnAnimation(this);
             }
         }
+        Log.d(this.getClass().getSimpleName(), "END of computeScroll; mayScroll: "+mayScroll);
     }
 
     /**
