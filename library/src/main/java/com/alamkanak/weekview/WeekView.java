@@ -424,7 +424,7 @@ public class WeekView extends View {
                 //mCurrentOrigin.x -= mWidthPerDay + mColumnGap;
                 Log.d(this.getClass().getSimpleName(), "ONE DAY");
 
-                maxBorderX = (int) (mCurrentOrigin.x - mWidthPerDay + mColumnGap);
+                maxBorderX = (int) (mCurrentOrigin.x - mWidthPerDay - mColumnGap);
                 minBorderX = (int) mCurrentOrigin.x;
             }
 
