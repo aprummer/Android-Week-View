@@ -1774,6 +1774,11 @@ public class WeekView extends View {
         invalidate();
     }
 
+    public void setNewHourHeight(int hourHeight) {
+        mHourHeight = hourHeight;
+        invalidate();
+    }
+
     public int getColumnGap() {
         return mColumnGap;
     }
