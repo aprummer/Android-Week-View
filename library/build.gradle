@@ -11,7 +11,8 @@ def artifactId = 'Android-Week-View'
 def groupId = 'com.github.aprummer'
 
 repositories {
-
+    google()
+    jcenter()
     mavenCentral()
 }
 
@@ -23,7 +24,7 @@ android {
         minSdkVersion 26
         targetSdkVersion 29
         versionCode 1
-        versionName "1.4"
+        versionName "1.5"
     }
 }
 
