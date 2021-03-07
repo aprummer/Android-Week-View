@@ -1283,7 +1283,16 @@ public class WeekView extends View {
         int availableWidth = (int) (rect.right - originalLeft - mEventPadding * 2);
 
         // Get text dimensions.
-        StaticLayout textLayout = new StaticLayout(bob, mEventTextPaint, availableWidth, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+
+        // old deprecated Constructor
+        //StaticLayout textLayout = new StaticLayout(bob, mEventTextPaint, availableWidth, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+
+        // new builder variant
+        StaticLayout.Builder sb = StaticLayout.Builder.obtain(bob , 0, bob.length(), mEventTextPaint, availableWidth)
+                .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+                .setLineSpacing(0.0f, 1.0f)
+                .setIncludePad(false);
+        StaticLayout textLayout = sb.build();
 
         int lineHeight = textLayout.getHeight() / textLayout.getLineCount();
 
@@ -1292,7 +1301,15 @@ public class WeekView extends View {
             int availableLineCount = availableHeight / lineHeight;
             do {
                 // Ellipsize text to fit into event rect.
-                textLayout = new StaticLayout(TextUtils.ellipsize(bob, mEventTextPaint, availableLineCount * availableWidth, TextUtils.TruncateAt.END), mEventTextPaint, (int) (rect.right - originalLeft - mEventPadding * 2), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+                // old deprecated Constructor
+                //textLayout = new StaticLayout(TextUtils.ellipsize(bob, mEventTextPaint, availableLineCount * availableWidth, TextUtils.TruncateAt.END), mEventTextPaint, (int) (rect.right - originalLeft - mEventPadding * 2), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+
+                // new builder Variant
+                StaticLayout.Builder staticLayoutBuilder = StaticLayout.Builder.obtain(TextUtils.ellipsize(bob, mEventTextPaint, availableLineCount * availableWidth, TextUtils.TruncateAt.END) , 0, bob.length(), mEventTextPaint, (int) (rect.right - originalLeft - mEventPadding * 2))
+                        .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+                        .setLineSpacing(0.0f, 1.0f)
+                        .setIncludePad(false);
+                textLayout = staticLayoutBuilder.build();
 
                 // Reduce line count.
                 availableLineCount--;
