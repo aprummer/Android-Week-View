@@ -1305,7 +1305,8 @@ public class WeekView extends View {
                 //textLayout = new StaticLayout(TextUtils.ellipsize(bob, mEventTextPaint, availableLineCount * availableWidth, TextUtils.TruncateAt.END), mEventTextPaint, (int) (rect.right - originalLeft - mEventPadding * 2), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
 
                 // new builder Variant
-                StaticLayout.Builder staticLayoutBuilder = StaticLayout.Builder.obtain(TextUtils.ellipsize(bob, mEventTextPaint, availableLineCount * availableWidth, TextUtils.TruncateAt.END) , 0, bob.length(), mEventTextPaint, (int) (rect.right - originalLeft - mEventPadding * 2))
+                CharSequence ellipsizedText = TextUtils.ellipsize(bob, mEventTextPaint, availableLineCount * availableWidth, TextUtils.TruncateAt.END);
+                StaticLayout.Builder staticLayoutBuilder = StaticLayout.Builder.obtain(ellipsizedText , 0, ellipsizedText.length(), mEventTextPaint, (int) (rect.right - originalLeft - mEventPadding * 2))
                         .setAlignment(Layout.Alignment.ALIGN_NORMAL)
                         .setLineSpacing(0.0f, 1.0f)
                         .setIncludePad(false);
