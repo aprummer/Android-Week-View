@@ -15,7 +15,7 @@ import static com.alamkanak.weekview.WeekViewUtil.*;
  */
 public class WeekViewEvent {
     @PrimaryKey(autoGenerate = false)
-    @ColumnInfo(name="id")
+    @ColumnInfo(name="agendaItemId")
     private long id;
     private Calendar mStartTime;
     private Calendar mEndTime;
